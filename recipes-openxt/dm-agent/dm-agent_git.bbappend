@@ -10,7 +10,9 @@ SRC_URI += " \
   file://0007-qemu-1.4-Add-graphic-options.patch \
   file://0008-Honor-the-configured-boot-order.patch \
   file://0010-qemu-device-use-net-tap-instead-of-net-bridge.patch \
+  file://0011-qemu1.4_dm-agent_use_svirt-interpose.patch;patch=1 \
 "
 
 INC_PR="r500"
-PR = "${INC_PR}.8"
+PR = "${INC_PR}.9"
+
