@@ -1,0 +1,37 @@
+In QEMU, there is a function called xenstore_record_dm_state that writes to 
+the following xenstore location:
+
+snprintf(path, sizeof (path), "/local/domain/0/device-model/%u/state", xen_domid)
+
+From what I can tell, it always writes "running", and is used by dm-agent (or 
+xl in upstream) to indicate that QEMU is up and running. Our goal is to reduce
+the number of patches to QEMU to be more inline with upstream so we removed the 
+QEMU patch, and instead fixed dm-agent to use the upstream path. 
+
+The other part of this patch removes a bunch of options that were added to 
+dm-agent because the old QEMU needed these. With the new QEMU, these are no 
+longer needed, so we can simply remove them. If we don't QEMU will not start
+because it will complain about not understanding these options. 
+
+diff -Naur dm-agent/src/spawn.c dm-agent-updated-xenstore-path/src/spawn.c
+--- dm-agent/src/spawn.c    2015-02-16 04:46:40.723547172 -0500
++++ dm-agent-updated-xenstore-path/src/spawn.c  2015-02-16 05:07:58.019593900 -0500
+@@ -136,8 +136,7 @@
+                    devmodel->dmid);
+ 
+     SPAWN_ADD_ARG (devmodel, "-machine");
+-    SPAWN_ADD_ARG (devmodel, "xenfv,xen_dmid=%u,xen_default_dev=on",
+-                   devmodel->dmid);
++    SPAWN_ADD_ARG (devmodel, "xenfv");
+ 
+     SPAWN_ADD_ARG (devmodel, "-m");
+     SPAWN_ADD_ARG (devmodel, "%lu", devmodel->domain->memkb >> 10);
+@@ -216,7 +215,7 @@
+     if (spawn->type == SPAWN_QEMU_OLD)
+         res = asprintf (&tmp, "%s/dms/qemu-old", dompath);
+     else
+-        res = asprintf (&tmp, "%s/dms/%u/state", dompath, devmodel->dmid);
++        res = asprintf (&tmp, "/local/domain/0/device-model/%u/state", devmodel->domain->domid);
+     free (dompath);
+ 
+     if (res == -1)

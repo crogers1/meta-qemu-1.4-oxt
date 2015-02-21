@@ -10,7 +10,8 @@ SRC_URI += " \
   file://0007-qemu-1.4-Add-graphic-options.patch \
   file://0008-Honor-the-configured-boot-order.patch \
   file://0010-qemu-device-use-net-tap-instead-of-net-bridge.patch \
+  file://0012-updated-xenstore-path.patch \
 "
 
 INC_PR = "r500"
-PR = "${INC_PR}.6"
+PR = "${INC_PR}.7"

@@ -1,0 +1,68 @@
+This patch replaces an patch that used to add an out-of-date version of the 
+new ioreq server API that was added to xen in 4.5. Without that patch, QEMU
+needs to be told that it is in a stubdomain, otherwise the event channels will
+fail to bind on startup, and QEMU will die. An explaintaion of how this should
+work can be found here:
+
+https://blog.xenproject.org/2012/12/12/linux-stub-domain/
+
+Basically, all we did was grab the source code, which contains a link to the 
+following git repo:
+
+git clone git://xenbits.xen.org/people/aperard/qemu-dm.git
+git checkout stubdom-preview1
+
+From there, you can do a git diff to see the changes that were made to setup 
+QEMU in a stubdomain. Since we use BitBake to compile QEMU for both dom0 and 
+the stubdomain, we do not need to include the extra complexity to turn this
+on / off, so the patch is pretty simple. Basically, we just need to tell the
+hypervisor that this guest is a stubdomain, and then we compile out the part 
+that connects starts up the backend drivers since this is done for us by dom0. 
+
+At some point this really should be upstreamed, as we are not the only ones that
+could benifit from this.
+
+diff -Naur qemu-1.4.0/xen-all.c qemu-1.4.0-hvm-param-dm-domain/xen-all.c
+--- qemu-1.4.0/xen-all.c    2013-02-15 18:05:35.000000000 -0500
++++ qemu-1.4.0-hvm-param-dm-domain/xen-all.c    2015-02-16 05:45:54.343708270 -0500
+@@ -1105,6 +1105,11 @@
+     state->suspend.notify = xen_suspend_notifier;
+     qemu_register_suspend_notifier(&state->suspend);
+ 
++    // We need to tell the hypervisor what the domid of the device model is. 
++    // Usually, it's expecting dom0, but with a stubdomain, that is not the 
++    // case
++    xc_set_hvm_param(xen_xc, xen_domid, HVM_PARAM_DM_DOMAIN, DOMID_SELF);
++
+     xc_get_hvm_param(xen_xc, xen_domid, HVM_PARAM_IOREQ_PFN, &ioreq_pfn);
+     DPRINTF("shared page at pfn %lx\n", ioreq_pfn);
+     state->shared_page = xc_map_foreign_range(xen_xc, xen_domid, XC_PAGE_SIZE,
+@@ -1160,6 +1165,7 @@
+     memory_listener_register(&state->memory_listener, &address_space_memory);
+     state->log_for_dirtybit = NULL;
+ 
++#if 0
+     /* Initialize backend core & drivers */
+     if (xen_be_init() != 0) {
+         fprintf(stderr, "%s: xen backend core setup failed\n", __FUNCTION__);
+@@ -1168,6 +1174,20 @@
+     xen_be_register("console", &xen_console_ops);
+     xen_be_register("vkbd", &xen_kbdmouse_ops);
+     xen_be_register("qdisk", &xen_blkdev_ops);
++#else
++
++    // This part of the patch we got from Anthony's blog post. Basically, there
++    // is not need to setup the backend drivers as Dom0 is going to do this for 
++    // us. Not entirely sure why we need to open xenstore here, but if we don't
++    // we get some segfaults, so my best guess is the init code would have done
++    // this for us.
++    xenstore = xs_daemon_open();
++    if (!xenstore) {
++        xen_be_printf(NULL, 0, "can't connect to xenstored\n");
++        return -1;
++    }
++
++#endif
+     xen_read_physmap(state);
+ 
+     return 0;
