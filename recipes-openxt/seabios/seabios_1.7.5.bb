@@ -37,5 +37,6 @@ do_configure() {
 do_install() {
     install -d ${D}/usr/share/firmware
     install -m 0644 out/bios.bin ${D}/usr/share/firmware/
+    install -m 0644 out/vgabios.bin ${D}/usr/share/firmware/
 }
 
