@@ -1,6 +1,8 @@
+diff --git a/src/optionroms.c b/src/optionroms.c
+index c2db53b..03a4b7e 100644
 --- a/src/optionroms.c
 +++ b/src/optionroms.c
-@@ -416,7 +416,7 @@ optionrom_setup(void)
+@@ -413,7 +413,7 @@ optionrom_setup(void)
   * VGA init
   ****************************************************************/
  
@@ -9,21 +11,25 @@
  int ScreenAndDebug;
  struct rom_header *VgaROM;
  
+diff --git a/src/util.h b/src/util.h
+index 996c29a..2302443 100644
 --- a/src/util.h
 +++ b/src/util.h
-@@ -195,6 +195,7 @@ void optionrom_setup(void);
+@@ -349,6 +349,7 @@ void optionrom_setup(void);
  void vgarom_setup(void);
  void s3_resume_vga(void);
  extern int ScreenAndDebug;
 +extern int S3ResumeVga;
  
- // pcibios.c
- void handle_1ab1(struct bregs *regs);
+ // bootsplash.c
+ void enable_vga_console(void);
+diff --git a/src/vgahooks.c b/src/vgahooks.c
+index c9a4448..38f3d8a 100644
 --- a/src/vgahooks.c
 +++ b/src/vgahooks.c
-@@ -254,6 +254,14 @@ getac_setup(struct pci_device *pci)
- {
+@@ -247,6 +247,14 @@ getac_setup(struct pci_device *pci)
  }
+ 
  
 +static void
 +amd_setup(struct pci_device *pci)
@@ -34,9 +40,9 @@
 +}
 +
  /****************************************************************
-  * Silicon Motion hooks
+  * Entry and setup
   ****************************************************************/
-@@ -351,4 +359,6 @@ vgahook_setup(struct pci_device *pci)
+@@ -285,4 +293,6 @@ vgahook_setup(struct pci_device *pci)
          via_setup(pci);
      else if (pci->vendor == PCI_VENDOR_ID_INTEL)
          intel_setup(pci);
