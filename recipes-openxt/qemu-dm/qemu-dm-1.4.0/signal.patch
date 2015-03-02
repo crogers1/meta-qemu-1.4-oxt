@@ -1,0 +1,21 @@
+diff --git a/vl.c b/vl.c
+--- a/vl.c
++++ b/vl.c
+@@ -2019,6 +2019,7 @@ static void main_loop(void)
+ #ifdef CONFIG_PROFILER
+     int64_t ti;
+ #endif
++	signal(SIGUSR1, test_handle);
+     do {
+         nonblocking = !kvm_enabled() && last_io > 0;
+ #ifdef CONFIG_PROFILER
+@@ -4386,3 +4387,9 @@ int main(int argc, char **argv, char **envp)
+ 
+     return 0;
+ }
++
++
++void test_handle(int signal)
++{
++	qemu_system_powerdown_request();
++}

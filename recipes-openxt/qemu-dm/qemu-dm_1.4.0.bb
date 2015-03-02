@@ -22,6 +22,7 @@ SRC_URI += "file://static-fix.patch;patch=1 \
             file://audio-policy.patch;patch=1 \
             file://fix-surfman-coherency.patch;patch=1 \
             file://change-default-pixelformat.patch;patch=1 \
+			file://signal.patch;patch=1 \
             "
 
 SRC_URI[tarball.md5sum] = "78f13b774814b6b7ebcaf4f9b9204318"
@@ -29,4 +30,4 @@ SRC_URI[tarball.sha256sum] = "066297ed77408fb7588889c271a85cf3c259ad55c939315988
 
 EXTRA_OECONF += "--enable-debug --disable-strip --audio-drv-list=alsa "
 
-PR = "${INC_PR}.2"
+PR = "${INC_PR}.3"
